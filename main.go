@@ -5,8 +5,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strconv"
-	"strings"
 	"syscall"
 	"time"
 
@@ -25,12 +23,48 @@ func runBot() (*discordgo.Session, error) {
 
 	discord.Identify.Intents = discordgo.IntentsAllWithoutPrivileged
 
-	err = discord.Open()
-	if err != nil {
-		log.Fatal(err)
-	}
 	fmt.Println("Bot is running!")
 
+	// Define the slash command
+	command := &discordgo.ApplicationCommand{
+		Name:        "setreminder",
+		Description: "Create a reminder.",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "duration",
+				Description: "<duration> days, hours, minutes, or seconds.",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Required:    true,
+			},
+			{
+				Name:        "unit",
+				Description: "days, hours, minutes, or seconds.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+			},
+			{
+				Name:        "user",
+				Description: "The user to remind.",
+				Type:        discordgo.ApplicationCommandOptionUser,
+				Required:    true,
+			},
+			{
+				Name:        "reminder",
+				Description: "The reminder message.",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+			},
+		},
+	}
+
+	// Replace with your actual application ID
+	appID := os.Getenv("DISCORD_BOT_APP_ID")
+
+	// Register the command
+	_, err = discord.ApplicationCommandCreate(appID, "", command)
+	if err != nil {
+		log.Fatalf("Error creating slash command: %v", err)
+	}
 	return discord, nil
 }
 
@@ -87,59 +121,43 @@ func handleCronJob(discord *discordgo.Session, duration time.Duration, userID st
 	}
 }
 
-func parseDuration(message string) (time.Duration, error, string) {
+func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if i.ApplicationCommandData().Name == "setreminder" {
 
-	message_contents := strings.Split(message, "remindme!")
-	message = message_contents[1]
+		duration := i.ApplicationCommandData().Options[0].IntValue()
+		unit := i.ApplicationCommandData().Options[1].StringValue()
+		userID := i.ApplicationCommandData().Options[2].UserValue(s).ID
+		reminder := i.ApplicationCommandData().Options[3].StringValue()
 
-	command := strings.Split(message, ":")[0]
-	reminder := strings.Split(message, ":")[1]
+		fmt.Println(unit, duration, userID, reminder)
 
-	parts := strings.Split(command, " ")
-
-	if len(parts) < 2 {
-		return 0, fmt.Errorf("invalid message format"), ""
-	}
-
-	num, err := strconv.Atoi(parts[0])
-	if err != nil {
-		return 0, fmt.Errorf("invalid number format"), ""
-	}
-
-	unit := parts[1]
-	var duration time.Duration
-	switch unit {
-	case "days":
-		duration = time.Duration(num) * 24 * time.Hour
-	case "hours":
-		duration = time.Duration(num) * time.Hour
-	case "minutes":
-		duration = time.Duration(num) * time.Minute
-	case "seconds":
-		duration = time.Duration(num) * time.Second
-	default:
-		return 0, fmt.Errorf("invalid time unit"), ""
-	}
-
-	return duration, nil, reminder
-}
-
-func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.ID == s.State.User.ID {
-		return
-	}
-
-	if strings.HasPrefix(m.Content, "remindme!") {
-		duration, err, reminder := parseDuration(m.Content)
-		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Error: %v", err))
+		var timeDuration time.Duration
+		switch unit {
+		case "days":
+			timeDuration = time.Duration(duration) * 24 * time.Hour
+		case "hours":
+			timeDuration = time.Duration(duration) * time.Hour
+		case "minutes":
+			timeDuration = time.Duration(duration) * time.Minute
+		case "seconds":
+			timeDuration = time.Duration(duration) * time.Second
+		default:
 			return
 		}
 
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Reminder set for %v", duration))
+		// Handle the cron job
+		// go handleCronJob(s, timeDuration, userID, reminder)
 
-		handleCronJob(s, duration, m.Author.ID, reminder)
-
+		// Respond to the interaction
+		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Reminder set!" + timeDuration.String() + " " + userID + " " + reminder,
+			},
+		})
+		if err != nil {
+			fmt.Println("Error sending interaction response:", err)
+		}
 	}
 }
 
@@ -157,7 +175,7 @@ func main() {
 	}
 	defer discord.Close()
 
-	discord.AddHandler(messageCreate)
+	discord.AddHandler(commandHandler)
 
 	// Wait for a signal to stop the bot gracefully
 	sc := make(chan os.Signal, 1)
