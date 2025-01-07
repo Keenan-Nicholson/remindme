@@ -23,7 +23,10 @@ func runBot() (*discordgo.Session, error) {
 
 	discord.Identify.Intents = discordgo.IntentsAllWithoutPrivileged
 
-	fmt.Println("Bot is running!")
+	err = discord.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Define the slash command
 	command := &discordgo.ApplicationCommand{
@@ -65,6 +68,9 @@ func runBot() (*discordgo.Session, error) {
 	if err != nil {
 		log.Fatalf("Error creating slash command: %v", err)
 	}
+
+	fmt.Println("Bot is running!")
+
 	return discord, nil
 }
 
@@ -77,7 +83,7 @@ func handleCronJob(discord *discordgo.Session, duration time.Duration, userID st
 		log.Fatal(err)
 	}
 
-	// Define the job and task
+	// Define the job and task asynchronously
 	_, err = s.NewJob(
 		gocron.OneTimeJob(
 			gocron.OneTimeJobStartDateTime(time.Now().Add(duration)),
@@ -86,7 +92,8 @@ func handleCronJob(discord *discordgo.Session, duration time.Duration, userID st
 			func() {
 				// Send a message to a Discord channel
 				channelID := channel_id // Replace with the desired channel ID
-				message := fmt.Sprintf("Hey <@%s>, this is your reminder to%s!", userID, reminder)
+				message := fmt.Sprintf("Hey <@%s>, this is your reminder to %s!", userID, reminder)
+				fmt.Println("Sending message:", message)
 				_, err := discord.ChannelMessageSend(channelID, message)
 				if err != nil {
 					fmt.Println("Error sending message:", err)
@@ -96,6 +103,7 @@ func handleCronJob(discord *discordgo.Session, duration time.Duration, userID st
 			},
 		),
 	)
+
 	if err != nil {
 		// Handle error
 		fmt.Println("Error creating job:", err)
@@ -146,13 +154,13 @@ func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 
 		// Handle the cron job
-		// go handleCronJob(s, timeDuration, userID, reminder)
+		go handleCronJob(s, timeDuration, userID, reminder)
 
 		// Respond to the interaction
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: "Reminder set!" + timeDuration.String() + " " + userID + " " + reminder,
+				Content: "Reminder set!",
 			},
 		})
 		if err != nil {
