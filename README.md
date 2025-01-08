@@ -11,7 +11,7 @@ To install and run **RemindMe!**, follow these steps:
 ### Prerequisites
 
 - [Go](https://golang.org/doc/install)
-- A [Discord Bot Token](https://discord.com/developers/applications)
+- [Discord Bot Token](https://discord.com/developers/applications)
 
 ### Clone the Repository
 ```bash
@@ -28,10 +28,7 @@ $ go install
 
 ## Configuration
 
-1. Create a `.env` file in the root directory:
-   ```
-   DISCORD_BOT_TOKEN=your_bot_token_here
-   ```
+1. Create a `.env` file in the root directory. See `.env.dist` for a template.
 ---
 
 ## Usage
@@ -40,9 +37,9 @@ $ go install
    - Invite the bot using your custom bot link.
 
 2. **Commands**
-   - `remindme!<time>: <message>`: Sets a reminder for the specified time.
-   - Example: `remindme!5 days: Ask team members if they are on schedule`
-
+   - /setreminder `<duration> <days,mins,hours,seconds> <user> <reminder message>`
+   - Example output: `remindme!5 days to ask team members if they are on schedule`
+   
 ---
 
 ## Development
