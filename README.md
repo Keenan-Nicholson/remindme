@@ -38,7 +38,7 @@ $ go install
 
 2. **Commands**
    - /setreminder `<duration> <days,mins,hours,seconds> <user> <reminder message>`
-   - Example output: `remindme!5 days to ask team members if they are on schedule`
+   - Example output: `Hey Keeborg, this is your reminder to call mom!`
    
 ---
 
