@@ -13,6 +13,19 @@ import (
 	"github.com/joho/godotenv"
 )
 
+func setupLogger() {
+	// Create or open a log file (it appends to the file if it already exists)
+	logFile, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatalf("Failed to open log file: %v", err)
+	}
+
+	log.SetOutput(logFile)
+
+	// Optional: Log the date and time in each log entry
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+}
+
 func runBot() (*discordgo.Session, error) {
 	secret := os.Getenv("DISCORD_BOT_TOKEN")
 
@@ -61,7 +74,7 @@ func runBot() (*discordgo.Session, error) {
 	}
 
 	// Replace with your actual application ID
-	appID := os.Getenv("DISCORD_BOT_APP_ID")
+	appID := os.Getenv("DISCORD_APP_ID")
 
 	// Register the command
 	_, err = discord.ApplicationCommandCreate(appID, "", command)
@@ -93,12 +106,11 @@ func handleCronJob(discord *discordgo.Session, duration time.Duration, userID st
 				// Send a message to a Discord channel
 				channelID := channel_id // Replace with the desired channel ID
 				message := fmt.Sprintf("Hey <@%s>, this is your reminder to %s!", userID, reminder)
-				fmt.Println("Sending message:", message)
 				_, err := discord.ChannelMessageSend(channelID, message)
 				if err != nil {
-					fmt.Println("Error sending message:", err)
+					log.Println("Error sending message:", err)
 				} else {
-					fmt.Println("Message sent!")
+					log.Println("Message sent!")
 				}
 			},
 		),
@@ -106,27 +118,13 @@ func handleCronJob(discord *discordgo.Session, duration time.Duration, userID st
 
 	if err != nil {
 		// Handle error
-		fmt.Println("Error creating job:", err)
+		log.Println("Error creating job:", err)
 		return
 	}
-
-	// each job has a unique id
-	// fmt.Println("Job ID:", s.Jobs()[0].ID())
 
 	// start the scheduler
 	s.Start()
 
-	// block until you are ready to shut down
-	select {
-	case <-time.After(time.Minute): // Runs for 1 minute
-	}
-
-	// when you're done, shut it down
-	err = s.Shutdown()
-	if err != nil {
-		// handle error
-		fmt.Println("Error shutting down scheduler:", err)
-	}
 }
 
 func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -137,7 +135,7 @@ func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		userID := i.ApplicationCommandData().Options[2].UserValue(s).ID
 		reminder := i.ApplicationCommandData().Options[3].StringValue()
 
-		fmt.Println(unit, duration, userID, reminder)
+		log.Printf("unit: %s, duration: %d, userID: %s, reminder: %s\n", unit, duration, userID, reminder)
 
 		var timeDuration time.Duration
 		switch unit {
@@ -164,12 +162,14 @@ func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			},
 		})
 		if err != nil {
-			fmt.Println("Error sending interaction response:", err)
+			log.Println("Error sending interaction response:", err)
 		}
 	}
 }
 
 func main() {
+
+	setupLogger()
 
 	// Load environment variables
 	err := godotenv.Load()
@@ -190,5 +190,5 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
-	fmt.Println("Bot is stopping!")
+	log.Println("Bot is stopping!")
 }
