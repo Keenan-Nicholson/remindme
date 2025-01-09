@@ -23,48 +23,44 @@ func RunBot() (*discordgo.Session, error) {
 		log.Fatal(err)
 	}
 
-	// Define the slash command
-	command := &discordgo.ApplicationCommand{
-		Name:        "setreminder",
-		Description: "Create a reminder.",
+	// Define the commands
+	setTimerCommand := &discordgo.ApplicationCommand{
+		Name:        "settimer",
+		Description: "Create a timer-based reminder.",
 		Options: []*discordgo.ApplicationCommandOption{
-			{
-				Name:        "duration",
-				Description: "<duration> days, hours, minutes, or seconds.",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				Required:    true,
-			},
-			{
-				Name:        "unit",
-				Description: "days, hours, minutes, or seconds.",
-				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    true,
-			},
-			{
-				Name:        "user",
-				Description: "The user to remind.",
-				Type:        discordgo.ApplicationCommandOptionUser,
-				Required:    true,
-			},
-			{
-				Name:        "reminder",
-				Description: "The reminder message.",
-				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    true,
-			},
+			{Name: "duration", Description: "Duration", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
+			{Name: "unit", Description: "Unit of time (days, hours, minutes, seconds)", Type: discordgo.ApplicationCommandOptionString, Required: true},
+			{Name: "user", Description: "User", Type: discordgo.ApplicationCommandOptionUser, Required: true},
+			{Name: "reminder", Description: "Reminder", Type: discordgo.ApplicationCommandOptionString, Required: true},
 		},
 	}
 
-	// Replace with your actual application ID
+	setDateCommand := &discordgo.ApplicationCommand{
+		Name:        "setdate",
+		Description: "Create a reminder for a specific date and time.",
+		Options: []*discordgo.ApplicationCommandOption{
+			{Name: "year", Description: "Year", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
+			{Name: "month", Description: "Month", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
+			{Name: "day", Description: "Day", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
+			{Name: "hour", Description: "Hour", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
+			{Name: "minute", Description: "Minute", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
+			{Name: "user", Description: "User", Type: discordgo.ApplicationCommandOptionUser, Required: true},
+			{Name: "reminder", Description: "Reminder", Type: discordgo.ApplicationCommandOptionString, Required: true},
+		},
+	}
+
 	appID := os.Getenv("DISCORD_APP_ID")
 
-	// Register the command
-	_, err = discord.ApplicationCommandCreate(appID, "", command)
+	guildID := os.Getenv("DISCORD_GUILD_ID")
+	_, err = discord.ApplicationCommandCreate(appID, guildID, setTimerCommand)
 	if err != nil {
-		log.Fatalf("Error creating slash command: %v", err)
+		log.Fatalf("Error creating 'settimer' command: %v", err)
+	}
+	_, err = discord.ApplicationCommandCreate(appID, guildID, setDateCommand)
+	if err != nil {
+		log.Fatalf("Error creating 'setdate' command: %v", err)
 	}
 
 	fmt.Println("Bot is running!")
-
 	return discord, nil
 }

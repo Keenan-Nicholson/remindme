@@ -10,9 +10,8 @@ import (
 	"github.com/go-co-op/gocron/v2"
 )
 
-func CreateDurationCronJob(discord *discordgo.Session, duration time.Duration, userID string, reminder string) {
+func CreateOneTimeCronJob(discord *discordgo.Session, duration time.Duration, userID string, reminder string) {
 	channel_id := os.Getenv("DISCORD_CHANNEL_ID")
-
 	// create a scheduler
 	s, err := gocron.NewScheduler()
 	if err != nil {
