@@ -33,15 +33,12 @@ $ go install
 
 ## Usage
 
-1. **Add the Bot to Your Server**
-   - Invite the bot using your custom bot link.
-
-2. **Commands**
-   1. `/settimer <duration> <days,mins,hours,seconds> <user> <reminder message>`
+**Commands**
+1. `/settimer <duration> <days,mins,hours,seconds> <user> <reminder message>`
    - **Description**: Sets a timer that will trigger a reminder after a specified duration. The duration can be set in days, minutes, hours, or seconds.
    - **Example output**: `Hey Keeborg, this is your reminder: take a study break!`
-   
-   2. `/setdate <year> <month> <day> <hour> <minute> <user> <reminder message>`
+
+2. `/setdate <year> <month> <day> <hour> <minute> <user> <reminder message>`
    - **Description**: Sets a reminder for a specific date and time. You provide the full date (year, month, day) along with the time (hour, minute).
    - **Example output**: `Hey Keeborg, this is your reminder: you have a dentist appointment today!`
 
