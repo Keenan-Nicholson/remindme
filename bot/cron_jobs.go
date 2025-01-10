@@ -27,7 +27,7 @@ func CreateOneTimeCronJob(discord *discordgo.Session, duration time.Duration, us
 			func() {
 				// Send a message to a Discord channel
 				channelID := channel_id // Replace with the desired channel ID
-				message := fmt.Sprintf("Hey <@%s>, this is your reminder to %s!", userID, reminder)
+				message := fmt.Sprintf("Hey <@%s>, this is your reminder: %s!", userID, reminder)
 				_, err := discord.ChannelMessageSend(channelID, message)
 				if err != nil {
 					log.Println("Error sending message:", err)

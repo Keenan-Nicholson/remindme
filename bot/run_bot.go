@@ -37,12 +37,12 @@ func RunBot() (*discordgo.Session, error) {
 
 	setDateCommand := &discordgo.ApplicationCommand{
 		Name:        "setdate",
-		Description: "Create a reminder for a specific date and time.",
+		Description: "Create a reminder for a specific date and time (UTC).",
 		Options: []*discordgo.ApplicationCommandOption{
 			{Name: "year", Description: "Year", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
 			{Name: "month", Description: "Month", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
 			{Name: "day", Description: "Day", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
-			{Name: "hour", Description: "Hour", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
+			{Name: "hour", Description: "Hour (24h)", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
 			{Name: "minute", Description: "Minute", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
 			{Name: "user", Description: "User", Type: discordgo.ApplicationCommandOptionUser, Required: true},
 			{Name: "reminder", Description: "Reminder", Type: discordgo.ApplicationCommandOptionString, Required: true},

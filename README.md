@@ -39,7 +39,7 @@ $ go install
    - **Example output**: `Hey Keeborg, this is your reminder: take a study break!`
 
 2. `/setdate <year> <month> <day> <hour> <minute> <user> <reminder message>`
-   - **Description**: Sets a reminder for a specific date and time. You provide the full date (year, month, day) along with the time (hour, minute).
+   - **Description**: Sets a reminder for a specific date and time. You provide the full date (year, month, day) along with the time (hour, minute). Currently only supports UTC.
    - **Example output**: `Hey Keeborg, this is your reminder: you have a dentist appointment today!`
 
 ---
