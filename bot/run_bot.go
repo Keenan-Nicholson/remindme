@@ -30,7 +30,7 @@ func RunBot() (*discordgo.Session, error) {
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "duration",
-				Description: "Duration",
+				Description: "Duration (int)",
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				Required:    true,
 			},
@@ -68,7 +68,7 @@ func RunBot() (*discordgo.Session, error) {
 
 			{
 				Name:        "reminder",
-				Description: "Reminder",
+				Description: "Reminder Message",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
 			},
@@ -117,7 +117,7 @@ func RunBot() (*discordgo.Session, error) {
 			},
 			{
 				Name:        "reminder",
-				Description: "Reminder",
+				Description: "Reminder Message",
 				Type:        discordgo.ApplicationCommandOptionString,
 				Required:    true,
 			},
