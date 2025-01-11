@@ -28,10 +28,50 @@ func RunBot() (*discordgo.Session, error) {
 		Name:        "settimer",
 		Description: "Create a timer-based reminder.",
 		Options: []*discordgo.ApplicationCommandOption{
-			{Name: "duration", Description: "Duration", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
-			{Name: "unit", Description: "Unit of time (days, hours, minutes, seconds)", Type: discordgo.ApplicationCommandOptionString, Required: true},
-			{Name: "user", Description: "User", Type: discordgo.ApplicationCommandOptionUser, Required: true},
-			{Name: "reminder", Description: "Reminder", Type: discordgo.ApplicationCommandOptionString, Required: true},
+			{
+				Name:        "duration",
+				Description: "Duration (int)",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Required:    true,
+			},
+			{
+				Name:        "unit",
+				Description: "Unit of time",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "days",
+						Value: "days",
+					},
+					{
+						Name:  "hours",
+						Value: "hours",
+					},
+					{
+						Name:  "minutes",
+						Value: "minutes",
+					},
+					{
+						Name:  "seconds",
+						Value: "seconds",
+					},
+				},
+			},
+
+			{
+				Name:        "user",
+				Description: "User",
+				Type:        discordgo.ApplicationCommandOptionUser,
+				Required:    true,
+			},
+
+			{
+				Name:        "reminder",
+				Description: "Reminder Message",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+			},
 		},
 	}
 
@@ -39,13 +79,48 @@ func RunBot() (*discordgo.Session, error) {
 		Name:        "setdate",
 		Description: "Create a reminder for a specific date and time (UTC).",
 		Options: []*discordgo.ApplicationCommandOption{
-			{Name: "year", Description: "Year", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
-			{Name: "month", Description: "Month", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
-			{Name: "day", Description: "Day", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
-			{Name: "hour", Description: "Hour (24h)", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
-			{Name: "minute", Description: "Minute", Type: discordgo.ApplicationCommandOptionInteger, Required: true},
-			{Name: "user", Description: "User", Type: discordgo.ApplicationCommandOptionUser, Required: true},
-			{Name: "reminder", Description: "Reminder", Type: discordgo.ApplicationCommandOptionString, Required: true},
+			{
+				Name:        "year",
+				Description: "Year",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Required:    true,
+			},
+			{
+				Name:        "month",
+				Description: "Month",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Required:    true,
+			},
+			{
+				Name:        "day",
+				Description: "Day",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Required:    true,
+			},
+			{
+				Name:        "hour",
+				Description: "Hour (24h)",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Required:    true,
+			},
+			{
+				Name:        "minute",
+				Description: "Minute",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Required:    true,
+			},
+			{
+				Name:        "user",
+				Description: "User",
+				Type:        discordgo.ApplicationCommandOptionUser,
+				Required:    true,
+			},
+			{
+				Name:        "reminder",
+				Description: "Reminder Message",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Required:    true,
+			},
 		},
 	}
 
