@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/Keenan-Nicholson/remindme/pkg/database"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -33,6 +34,7 @@ func TimerCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		// Handle the cron job
 		go CreateOneTimeCronJob(s, timeDuration, userID, reminder)
+		database.InsertDurationReminder(userID, timeDuration, reminder)
 
 		// Respond to the interaction
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -61,9 +63,11 @@ func DateCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		log.Printf("year: %d, month: %d, day: %d, hour: %d, minute: %d, userID: %s, reminder: %s\n", year, month, day, hour, minute, userID, reminder)
 
 		// Handle the cron job
-		duration := ConvertDateToDuration(year, month, day, hour, minute)
+		timeDuration := ConvertDateToDuration(year, month, day, hour, minute)
+		targetTime := time.Date(year, time.Month(month), day, hour, minute, 0, 0, time.UTC)
 
-		go CreateOneTimeCronJob(s, duration, userID, reminder)
+		go CreateOneTimeCronJob(s, timeDuration, userID, reminder)
+		database.InsertDateTimeReminder(userID, targetTime, reminder)
 
 		// Respond to the interaction
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
