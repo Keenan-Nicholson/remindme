@@ -34,7 +34,7 @@ func TimerCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		// Handle the cron job
 		go CreateOneTimeCronJob(s, timeDuration, userID, reminder)
-		database.InsertDurationReminder(userID, timeDuration, reminder)
+		database.InsertReminder(userID, timeDuration, reminder)
 
 		// Respond to the interaction
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -64,10 +64,9 @@ func DateCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		// Handle the cron job
 		timeDuration := ConvertDateToDuration(year, month, day, hour, minute)
-		targetTime := time.Date(year, time.Month(month), day, hour, minute, 0, 0, time.UTC)
 
 		go CreateOneTimeCronJob(s, timeDuration, userID, reminder)
-		database.InsertDateTimeReminder(userID, targetTime, reminder)
+		database.InsertReminder(userID, timeDuration, reminder)
 
 		// Respond to the interaction
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

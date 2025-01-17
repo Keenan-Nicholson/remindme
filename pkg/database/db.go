@@ -17,23 +17,14 @@ func InitDB() {
 	defer db.Close()
 
 	sqlStmt := `
-	CREATE TABLE IF NOT EXISTS duration_reminders (
+	CREATE TABLE IF NOT EXISTS reminders (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		created_at DATETIME DEFAULT (datetime('now', 'utc')),
 		username TEXT,
 		duration INTEGER,
 		reminder TEXT
 	);
-
-	CREATE TABLE IF NOT EXISTS datetime_reminders (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		created_at DATETIME DEFAULT (datetime('now', 'utc')),
-		username TEXT,
-		targetTime DATETIME,
-		reminder TEXT
-	);
 	`
-
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
 		log.Fatal(err)
@@ -41,7 +32,7 @@ func InitDB() {
 }
 
 // InsertReminder inserts a new reminder into the database
-func InsertDurationReminder(username string, duration time.Duration, reminder string) {
+func InsertReminder(username string, duration time.Duration, reminder string) {
 	db, err := sql.Open("sqlite3", "./database.db")
 	if err != nil {
 		log.Fatal(err)
@@ -51,27 +42,10 @@ func InsertDurationReminder(username string, duration time.Duration, reminder st
 	durationSeconds := int(duration.Seconds())
 
 	sqlStmt := `
-	INSERT INTO duration_reminders (username, duration, reminder) VALUES (?, ?, ?)
+	INSERT INTO reminders (username, duration, reminder) VALUES (?, ?, ?)
 	`
 
 	_, err = db.Exec(sqlStmt, username, durationSeconds, reminder)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func InsertDateTimeReminder(username string, targetTime time.Time, reminder string) {
-	db, err := sql.Open("sqlite3", "./database.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	sqlStmt := `
-	INSERT INTO datetime_reminders (username, targetTime, reminder) VALUES (?, ?, ?)
-	`
-
-	_, err = db.Exec(sqlStmt, username, targetTime, reminder)
 	if err != nil {
 		log.Fatal(err)
 	}
