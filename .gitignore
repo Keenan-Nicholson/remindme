@@ -2,3 +2,4 @@
 .env
 app.log
 database.db
+database.db-journal

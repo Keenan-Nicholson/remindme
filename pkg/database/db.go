@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"sync"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -15,8 +14,7 @@ var db *sql.DB // Declare a global db connection
 // InitDB initializes the database and creates the table if it doesn't exist
 func InitDB() {
 	var err error
-	// Open the database connection globally
-	db, err = sql.Open("sqlite3", "./database.db")
+	db, err = sql.Open("sqlite3", "file:./database.db?cache=shared&mode=rwc&_loc=UTC")
 	if err != nil {
 		log.Fatal("Error opening database:", err)
 	}
@@ -72,51 +70,25 @@ func GetReminders() (*sql.Rows, error) {
 	return rows, nil
 }
 
-var dbMutex sync.Mutex
-
 func DeleteReminder(rowID int) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	const maxRetries = 5
-	var err error
-	var result sql.Result
-
-	for i := 0; i < maxRetries; i++ {
-		// Attempt to execute the DELETE query
-		query := "DELETE FROM reminders WHERE id = ?"
-		result, err = db.Exec(query, rowID)
-
-		// Check if the error is due to the database being locked
-		if err != nil && err.Error() == "database is locked" {
-			log.Printf("Database is locked, retrying... (Attempt %d/%d)", i+1, maxRetries)
-			time.Sleep(time.Second * time.Duration(i)) // Exponential backoff can be applied here
-			continue
-		}
-
-		if err != nil {
-			log.Println("Error executing DELETE query:", err)
-			return fmt.Errorf("failed to delete reminder: %w", err)
-		}
-
-		// Check how many rows were affected
-		rowsAffected, err := result.RowsAffected()
-		if err != nil {
-			log.Println("Error getting rows affected:", err)
-			return fmt.Errorf("failed to retrieve affected rows: %w", err)
-		}
-
-		if rowsAffected == 0 {
-			log.Printf("No reminder found with ID %d", rowID)
-		}
-		break
+	// Delete the reminder with the given ID
+	query := "DELETE FROM reminders WHERE id = ?"
+	result, err := db.Exec(query, rowID)
+	if err != nil {
+		log.Println("Error executing DELETE query:", err)
+		return fmt.Errorf("failed to delete reminder: %w", err)
 	}
 
-	// If the maximum retries were reached and we still encountered an error
-	if err != nil && err.Error() == "database is locked" {
-		log.Println("Failed to delete reminder after retries")
-		return fmt.Errorf("database is locked after %d retries", maxRetries)
+	// Check how many rows were affected
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Println("Error getting rows affected:", err)
+		return fmt.Errorf("failed to retrieve affected rows: %w", err)
 	}
 
+	// If no rows were affected, it means no reminder was found with that ID
+	if rowsAffected == 0 {
+		log.Printf("No reminder found with ID %d", rowID)
+	}
 	return nil // Return nil to indicate success
 }
