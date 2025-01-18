@@ -68,8 +68,6 @@ func PopulateCronScheduleFromDatabase(s *discordgo.Session) error {
 
 			CreateOneTimeCronJob(s, newDuration, username, reminder, id)
 		}
-
-		time.Sleep(2000)
 	}
 
 	return nil

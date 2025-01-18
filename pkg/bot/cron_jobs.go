@@ -39,7 +39,6 @@ func CreateOneTimeCronJob(discord *discordgo.Session, duration time.Duration, us
 				}
 
 				dbErr := database.DeleteReminder(rowID)
-
 				if dbErr != nil {
 					log.Println("Error deleting reminder from DB:", dbErr)
 				} else {
