@@ -27,11 +27,11 @@ func InitDB() {
 	// Create the table if it doesn't exist
 	sqlStmt := `
 	CREATE TABLE IF NOT EXISTS reminders (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		created_at DATETIME DEFAULT (datetime('now', 'utc')),
-		username TEXT,
-		duration INTEGER,
-		reminder TEXT
+		id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+		created_at DATETIME DEFAULT (datetime('now', 'utc')) NOT NULL,
+		username TEXT NOT NULL,
+		duration INTEGER NOT NULL,
+		reminder TEXT NOT NULL
 	);
 	`
 	_, err = db.Exec(sqlStmt)
@@ -43,52 +43,75 @@ func InitDB() {
 
 // InsertReminder inserts a new reminder into the database and returns its ID.
 func InsertReminder(username string, duration time.Duration, reminder string) (int, error) {
-	// Convert duration to seconds
-	durationSeconds := int(duration.Seconds())
+	tx, err := db.Begin()
+	if err != nil {
+		return 0, fmt.Errorf("failed to begin transaction: %w", err)
+	}
 
-	// Insert the reminder into the database
-	sqlStmt := `INSERT INTO reminders (username, duration, reminder) VALUES (?, ?, ?)`
-	result, err := db.Exec(sqlStmt, username, durationSeconds, reminder)
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+			log.Println("transaction rolled back due to error:", err)
+		}
+	}()
+
+	_, err = tx.Exec("INSERT INTO reminders (username, duration, reminder) VALUES (?, ?, ?)", username, int(duration.Seconds()), reminder)
 	if err != nil {
 		return 0, fmt.Errorf("failed to insert reminder: %w", err)
 	}
 
-	// Get the ID of the newly inserted row
-	id, err := result.LastInsertId()
+	var id int
+	err = tx.QueryRow("SELECT last_insert_rowid()").Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("failed to retrieve last inserted ID: %w", err)
+		return 0, fmt.Errorf("failed to get last insert ID: %w", err)
 	}
-	return int(id), nil
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return id, nil
+
 }
 
 func GetReminders() (*sql.Rows, error) {
 	// Query the database for all reminders
-	rows, err := db.Query("SELECT id, username, duration, reminder FROM reminders")
+	rows, err := db.Query("SELECT id, created_at, username, duration, reminder FROM reminders")
 	if err != nil {
 		return nil, fmt.Errorf("failed to query database: %w", err)
 	}
 	return rows, nil
 }
 
-func DeleteReminder(rowID int) error {
-	// Delete the reminder with the given ID
-	query := "DELETE FROM reminders WHERE id = ?"
-	result, err := db.Exec(query, rowID)
+func DeleteReminder(id int) error {
+	// Begin a transaction
+	tx, err := db.Begin()
 	if err != nil {
-		log.Println("Error executing DELETE query:", err)
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	// Ensure to rollback the transaction in case of an error
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+			log.Println("transaction rolled back due to error:", err)
+		}
+	}()
+
+	// Mutate the database within the transaction
+	_, err = tx.Exec("DELETE FROM reminders WHERE id = ?", id)
+	if err != nil {
 		return fmt.Errorf("failed to delete reminder: %w", err)
 	}
 
-	// Check how many rows were affected
-	rowsAffected, err := result.RowsAffected()
+	// Commit the transaction
+	err = tx.Commit()
 	if err != nil {
-		log.Println("Error getting rows affected:", err)
-		return fmt.Errorf("failed to retrieve affected rows: %w", err)
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	// If no rows were affected, it means no reminder was found with that ID
-	if rowsAffected == 0 {
-		log.Printf("No reminder found with ID %d", rowID)
-	}
-	return nil // Return nil to indicate success
+	// Success
+	fmt.Println("Reminder deleted successfully!")
+	return nil
 }
