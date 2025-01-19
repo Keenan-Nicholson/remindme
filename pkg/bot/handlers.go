@@ -57,8 +57,10 @@ func TimerCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Reminder set!",
+				Flags:   1 << 6, // This sets the response to be ephemeral
 			},
 		})
+
 		if responseErr != nil {
 			log.Println("Error sending interaction response:", responseErr)
 		}
@@ -103,8 +105,10 @@ func DateCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Reminder set!",
+				Flags:   1 << 6, // This sets the response to be ephemeral
 			},
 		})
+
 		if responseErr != nil {
 			log.Println("Error sending interaction response:", err)
 		}

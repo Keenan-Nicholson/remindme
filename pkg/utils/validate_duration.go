@@ -13,7 +13,7 @@ const (
 
 // ValidateDuration returns a valid duration or an error if it's out of bounds
 func ValidateDuration(duration time.Duration) (time.Duration, error) {
-	if duration < MinDuration {
+	if duration <= MinDuration {
 		return 0, errors.New("duration is too short, minimum is 1 second")
 	}
 	if duration > MaxDuration {
