@@ -112,6 +112,6 @@ func DeleteReminder(id int) error {
 	}
 
 	// Success
-	fmt.Println("Reminder deleted successfully!")
+	log.Println("Reminder deleted successfully!")
 	return nil
 }

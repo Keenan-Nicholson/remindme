@@ -44,7 +44,6 @@ func PopulateCronScheduleFromDatabase(s *discordgo.Session) error {
 		reminders = append(reminders, reminder)
 	}
 
-	// Iterate over stored reminders and process each
 	for _, r := range reminders {
 		reminderTime := r.CreatedAt.Add(time.Duration(r.DurationSeconds) * time.Second)
 
