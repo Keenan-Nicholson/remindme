@@ -1,3 +1,5 @@
 .DS_Store
 .env
 app.log
+database.db
+database.db-journal

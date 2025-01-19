@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/Keenan-Nicholson/remindme/pkg/database"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -31,18 +32,26 @@ func TimerCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			return
 		}
 
+		// Insert reminder into the database and handle errors
+		id, err := database.InsertReminder(userID, timeDuration, reminder)
+		if err != nil {
+			log.Println("Error inserting reminder:", err)
+		} else {
+			log.Printf("Reminder created with ID: %d", id)
+		}
+
 		// Handle the cron job
-		go CreateOneTimeCronJob(s, timeDuration, userID, reminder)
+		go CreateOneTimeCronJob(s, timeDuration, userID, reminder, id)
 
 		// Respond to the interaction
-		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		responseErr := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Reminder set!",
 			},
 		})
-		if err != nil {
-			log.Println("Error sending interaction response:", err)
+		if responseErr != nil {
+			log.Println("Error sending interaction response:", responseErr)
 		}
 	}
 }
@@ -61,18 +70,26 @@ func DateCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		log.Printf("year: %d, month: %d, day: %d, hour: %d, minute: %d, userID: %s, reminder: %s\n", year, month, day, hour, minute, userID, reminder)
 
 		// Handle the cron job
-		duration := ConvertDateToDuration(year, month, day, hour, minute)
+		timeDuration := ConvertDateToDuration(year, month, day, hour, minute)
 
-		go CreateOneTimeCronJob(s, duration, userID, reminder)
+		// Insert reminder into the database and handle errors
+		id, err := database.InsertReminder(userID, timeDuration, reminder)
+		if err != nil {
+			log.Println("Error inserting reminder:", err)
+		} else {
+			log.Printf("Reminder created with ID: %d", id)
+		}
+
+		go CreateOneTimeCronJob(s, timeDuration, userID, reminder, id)
 
 		// Respond to the interaction
-		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		responseErr := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Reminder set!",
 			},
 		})
-		if err != nil {
+		if responseErr != nil {
 			log.Println("Error sending interaction response:", err)
 		}
 	}

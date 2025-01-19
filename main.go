@@ -6,7 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Keenan-Nicholson/remindme/bot"
+	"github.com/Keenan-Nicholson/remindme/pkg/bot"
+	"github.com/Keenan-Nicholson/remindme/pkg/database"
 	"github.com/joho/godotenv"
 )
 
@@ -28,6 +29,10 @@ func main() {
 
 	discord.AddHandler(bot.TimerCommandHandler)
 	discord.AddHandler(bot.DateCommandHandler)
+
+	database.InitDB()
+
+	bot.PopulateCronScheduleFromDatabase(discord)
 
 	// stop the bot gracefully
 	sc := make(chan os.Signal, 1)
