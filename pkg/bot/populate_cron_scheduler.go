@@ -27,6 +27,7 @@ func PopulateCronScheduleFromDatabase(s *discordgo.Session) error {
 		DurationSeconds int
 		Reminder        string
 		ChannelID       string
+		GuildID         string
 	}
 
 	for rows.Next() {
@@ -37,8 +38,9 @@ func PopulateCronScheduleFromDatabase(s *discordgo.Session) error {
 			DurationSeconds int
 			Reminder        string
 			ChannelID       string
+			GuildID         string
 		}
-		if err := rows.Scan(&reminder.ID, &reminder.CreatedAt, &reminder.Username, &reminder.DurationSeconds, &reminder.Reminder, &reminder.ChannelID); err != nil {
+		if err := rows.Scan(&reminder.ID, &reminder.CreatedAt, &reminder.Username, &reminder.DurationSeconds, &reminder.Reminder, &reminder.ChannelID, &reminder.GuildID); err != nil {
 			log.Println("Error scanning row:", err)
 			continue
 		}
@@ -68,7 +70,7 @@ func PopulateCronScheduleFromDatabase(s *discordgo.Session) error {
 		} else {
 			// Reminder is in the future, schedule it
 			durationUntilReminder := reminderTime.Sub(currentTime)
-			log.Printf("Scheduling reminder for user %s: %s in %s in channel %s", r.Username, r.Reminder, durationUntilReminder, r.ChannelID)
+			log.Printf("Scheduling reminder for user %s: %s in %s in channel %s in guild %s", r.Username, r.Reminder, durationUntilReminder, r.ChannelID, r.GuildID)
 			CreateOneTimeCronJob(s, durationUntilReminder, r.Username, r.Reminder, r.ID, r.ChannelID)
 		}
 	}

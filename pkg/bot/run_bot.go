@@ -125,13 +125,12 @@ func RunBot() (*discordgo.Session, error) {
 	}
 
 	appID := os.Getenv("DISCORD_APP_ID")
-	guildID := os.Getenv("DISCORD_GUILD_ID")
 
-	_, err = discord.ApplicationCommandCreate(appID, guildID, setTimerCommand)
+	_, err = discord.ApplicationCommandCreate(appID, "", setTimerCommand)
 	if err != nil {
 		log.Fatalf("Error creating 'settimer' command: %v", err)
 	}
-	_, err = discord.ApplicationCommandCreate(appID, guildID, setDateCommand)
+	_, err = discord.ApplicationCommandCreate(appID, "", setDateCommand)
 	if err != nil {
 		log.Fatalf("Error creating 'setdate' command: %v", err)
 	}

@@ -16,8 +16,9 @@ func TimerCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		userID := i.ApplicationCommandData().Options[2].UserValue(s).ID
 		reminder := i.ApplicationCommandData().Options[3].StringValue()
 		channelID := i.ChannelID
+		guildID := i.GuildID
 
-		log.Printf("unit: %s, duration: %d, userID: %s, reminder: %s, channel: %s\n", unit, duration, userID, reminder, channelID)
+		log.Printf("unit: %s, duration: %d, userID: %s, reminder: %s, channel: %s, guild: %s\n", unit, duration, userID, reminder, channelID, guildID)
 
 		var timeDuration time.Duration
 		switch unit {
@@ -34,7 +35,7 @@ func TimerCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 
 		// Insert reminder into the database and handle errors
-		id, err := database.InsertReminder(userID, timeDuration, reminder, channelID)
+		id, err := database.InsertReminder(userID, timeDuration, reminder, channelID, guildID)
 		if err != nil {
 			log.Println("Error inserting reminder:", err)
 		} else {
@@ -68,14 +69,15 @@ func DateCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		userID := i.ApplicationCommandData().Options[5].UserValue(s).ID
 		reminder := i.ApplicationCommandData().Options[6].StringValue()
 		channelID := i.ChannelID
+		guildID := i.GuildID
 
-		log.Printf("year: %d, month: %d, day: %d, hour: %d, minute: %d, userID: %s, reminder: %s\n", year, month, day, hour, minute, userID, reminder)
+		log.Printf("year: %d, month: %d, day: %d, hour: %d, minute: %d, userID: %s, reminder: %s, channel: %s, guild: %s\n", year, month, day, hour, minute, userID, reminder, channelID, guildID)
 
 		// Handle the cron job
 		timeDuration := ConvertDateToDuration(year, month, day, hour, minute)
 
 		// Insert reminder into the database and handle errors
-		id, err := database.InsertReminder(userID, timeDuration, reminder, channelID)
+		id, err := database.InsertReminder(userID, timeDuration, reminder, channelID, guildID)
 		if err != nil {
 			log.Println("Error inserting reminder:", err)
 		} else {
