@@ -15,8 +15,9 @@ func TimerCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		unit := i.ApplicationCommandData().Options[1].StringValue()
 		userID := i.ApplicationCommandData().Options[2].UserValue(s).ID
 		reminder := i.ApplicationCommandData().Options[3].StringValue()
+		channelID := i.ChannelID
 
-		log.Printf("unit: %s, duration: %d, userID: %s, reminder: %s\n", unit, duration, userID, reminder)
+		log.Printf("unit: %s, duration: %d, userID: %s, reminder: %s, channel: %s\n", unit, duration, userID, reminder, channelID)
 
 		var timeDuration time.Duration
 		switch unit {
@@ -33,7 +34,7 @@ func TimerCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 
 		// Insert reminder into the database and handle errors
-		id, err := database.InsertReminder(userID, timeDuration, reminder)
+		id, err := database.InsertReminder(userID, timeDuration, reminder, channelID)
 		if err != nil {
 			log.Println("Error inserting reminder:", err)
 		} else {
@@ -41,7 +42,7 @@ func TimerCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 
 		// Handle the cron job
-		go CreateOneTimeCronJob(s, timeDuration, userID, reminder, id)
+		go CreateOneTimeCronJob(s, timeDuration, userID, reminder, id, channelID)
 
 		// Respond to the interaction
 		responseErr := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -66,6 +67,7 @@ func DateCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		minute := int(i.ApplicationCommandData().Options[4].IntValue())
 		userID := i.ApplicationCommandData().Options[5].UserValue(s).ID
 		reminder := i.ApplicationCommandData().Options[6].StringValue()
+		channelID := i.ChannelID
 
 		log.Printf("year: %d, month: %d, day: %d, hour: %d, minute: %d, userID: %s, reminder: %s\n", year, month, day, hour, minute, userID, reminder)
 
@@ -73,14 +75,14 @@ func DateCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		timeDuration := ConvertDateToDuration(year, month, day, hour, minute)
 
 		// Insert reminder into the database and handle errors
-		id, err := database.InsertReminder(userID, timeDuration, reminder)
+		id, err := database.InsertReminder(userID, timeDuration, reminder, channelID)
 		if err != nil {
 			log.Println("Error inserting reminder:", err)
 		} else {
 			log.Printf("Reminder created with ID: %d", id)
 		}
 
-		go CreateOneTimeCronJob(s, timeDuration, userID, reminder, id)
+		go CreateOneTimeCronJob(s, timeDuration, userID, reminder, id, channelID)
 
 		// Respond to the interaction
 		responseErr := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

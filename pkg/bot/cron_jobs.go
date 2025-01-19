@@ -3,7 +3,6 @@ package bot
 import (
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/Keenan-Nicholson/remindme/pkg/database"
@@ -11,8 +10,8 @@ import (
 	"github.com/go-co-op/gocron/v2"
 )
 
-func CreateOneTimeCronJob(discord *discordgo.Session, duration time.Duration, userID string, reminder string, uid int) {
-	channel_id := os.Getenv("DISCORD_CHANNEL_ID")
+func CreateOneTimeCronJob(discord *discordgo.Session, duration time.Duration, userID string, reminder string, uid int, channelID string) {
+	channel_id := channelID
 	// create a scheduler
 	s, err := gocron.NewScheduler()
 	if err != nil {

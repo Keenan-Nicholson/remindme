@@ -3,7 +3,6 @@ package bot
 import (
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/Keenan-Nicholson/remindme/pkg/database"
@@ -27,6 +26,7 @@ func PopulateCronScheduleFromDatabase(s *discordgo.Session) error {
 		Username        string
 		DurationSeconds int
 		Reminder        string
+		ChannelID       string
 	}
 
 	for rows.Next() {
@@ -36,8 +36,9 @@ func PopulateCronScheduleFromDatabase(s *discordgo.Session) error {
 			Username        string
 			DurationSeconds int
 			Reminder        string
+			ChannelID       string
 		}
-		if err := rows.Scan(&reminder.ID, &reminder.CreatedAt, &reminder.Username, &reminder.DurationSeconds, &reminder.Reminder); err != nil {
+		if err := rows.Scan(&reminder.ID, &reminder.CreatedAt, &reminder.Username, &reminder.DurationSeconds, &reminder.Reminder, &reminder.ChannelID); err != nil {
 			log.Println("Error scanning row:", err)
 			continue
 		}
@@ -57,8 +58,8 @@ func PopulateCronScheduleFromDatabase(s *discordgo.Session) error {
 		} else if currentTime.Equal(reminderTime) {
 			// Reminder is set to the current time, send it immediately
 			message := fmt.Sprintf("Hey <@%s>, this is your reminder: %s!", r.Username, r.Reminder)
-			log.Printf("Executing reminder for user %s: %s", r.Username, r.Reminder)
-			_, err := s.ChannelMessageSend(os.Getenv("DISCORD_CHANNEL_ID"), message)
+			log.Printf("Executing reminder for user %s: %s in channel %s", r.Username, r.Reminder, r.ChannelID)
+			_, err := s.ChannelMessageSend(r.ChannelID, message)
 			if err != nil {
 				log.Println("Error sending message:", err)
 			} else {
@@ -67,8 +68,8 @@ func PopulateCronScheduleFromDatabase(s *discordgo.Session) error {
 		} else {
 			// Reminder is in the future, schedule it
 			durationUntilReminder := reminderTime.Sub(currentTime)
-			log.Printf("Scheduling reminder for user %s: %s in %s", r.Username, r.Reminder, durationUntilReminder)
-			CreateOneTimeCronJob(s, durationUntilReminder, r.Username, r.Reminder, r.ID)
+			log.Printf("Scheduling reminder for user %s: %s in %s in channel %s", r.Username, r.Reminder, durationUntilReminder, r.ChannelID)
+			CreateOneTimeCronJob(s, durationUntilReminder, r.Username, r.Reminder, r.ID, r.ChannelID)
 		}
 	}
 

@@ -31,7 +31,8 @@ func InitDB() {
 		created_at DATETIME DEFAULT (datetime('now', 'utc')) NOT NULL,
 		username TEXT NOT NULL,
 		duration INTEGER NOT NULL,
-		reminder TEXT NOT NULL
+		reminder TEXT NOT NULL,
+		channelID TEXT NOT NULL
 	);
 	`
 	_, err = db.Exec(sqlStmt)
@@ -42,7 +43,7 @@ func InitDB() {
 }
 
 // InsertReminder inserts a new reminder into the database and returns its ID.
-func InsertReminder(username string, duration time.Duration, reminder string) (int, error) {
+func InsertReminder(username string, duration time.Duration, reminder string, channelID string) (int, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return 0, fmt.Errorf("failed to begin transaction: %w", err)
@@ -55,7 +56,7 @@ func InsertReminder(username string, duration time.Duration, reminder string) (i
 		}
 	}()
 
-	_, err = tx.Exec("INSERT INTO reminders (username, duration, reminder) VALUES (?, ?, ?)", username, int(duration.Seconds()), reminder)
+	_, err = tx.Exec("INSERT INTO reminders (username, duration, reminder, channelID) VALUES (?, ?, ?, ?)", username, int(duration.Seconds()), reminder, channelID)
 	if err != nil {
 		return 0, fmt.Errorf("failed to insert reminder: %w", err)
 	}
@@ -77,7 +78,7 @@ func InsertReminder(username string, duration time.Duration, reminder string) (i
 
 func GetReminders() (*sql.Rows, error) {
 	// Query the database for all reminders
-	rows, err := db.Query("SELECT id, created_at, username, duration, reminder FROM reminders")
+	rows, err := db.Query("SELECT id, created_at, username, duration, reminder, channelID FROM reminders")
 	if err != nil {
 		return nil, fmt.Errorf("failed to query database: %w", err)
 	}
