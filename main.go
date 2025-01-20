@@ -8,12 +8,13 @@ import (
 
 	"github.com/Keenan-Nicholson/remindme/pkg/bot"
 	"github.com/Keenan-Nicholson/remindme/pkg/database"
+	"github.com/Keenan-Nicholson/remindme/pkg/utils"
 	"github.com/joho/godotenv"
 )
 
 func main() {
 
-	bot.SetupLogger()
+	utils.SetupLogger()
 
 	// Load environment variables
 	err := godotenv.Load()
