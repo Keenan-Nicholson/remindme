@@ -1,0 +1,9 @@
+services:
+  bot:
+    build: .
+    container_name: remindme
+    env_file: 
+      - .env
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
