@@ -6,13 +6,17 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/joho/godotenv"
+
 	"github.com/Keenan-Nicholson/remindme/pkg/bot"
 	"github.com/Keenan-Nicholson/remindme/pkg/database"
 	"github.com/Keenan-Nicholson/remindme/pkg/utils"
-	"github.com/joho/godotenv"
 )
 
 func main() {
+	if _, err := os.Stat("data"); os.IsNotExist(err) {
+		os.Mkdir("data", 0755)
+	}
 
 	utils.SetupLogger()
 

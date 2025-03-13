@@ -2,137 +2,49 @@ package bot
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/bwmarrin/discordgo"
+	"pkg.nit.so/switchboard"
 )
 
 func RunBot() (*discordgo.Session, error) {
 	secret := os.Getenv("DISCORD_BOT_TOKEN")
+	guildId := os.Getenv("DISCORD_GUILD_ID")
+
+	commandHandler := switchboard.Switchboard{}
+	_ = commandHandler.AddCommand(&switchboard.Command{
+		Name:        "settimer",
+		Description: "Create a timer-based reminder.",
+		Handler:     TimerCommandHandler,
+		GuildID:     guildId,
+	})
+	_ = commandHandler.AddCommand(&switchboard.Command{
+		Name:        "setdate",
+		Description: "Create a date-based reminder.",
+		Handler:     DateCommandHandler,
+		GuildID:     guildId,
+	})
 
 	discord, err := discordgo.New("Bot " + secret)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("error creating Discord session: %w", err)
 	}
 
 	discord.Identify.Intents = discordgo.IntentsAllWithoutPrivileged
 
+	discord.AddHandler(commandHandler.HandleInteractionCreate)
+
 	err = discord.Open()
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Define the commands
-	setTimerCommand := &discordgo.ApplicationCommand{
-		Name:        "settimer",
-		Description: "Create a timer-based reminder.",
-		Options: []*discordgo.ApplicationCommandOption{
-			{
-				Name:        "duration",
-				Description: "Duration (int)",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				Required:    true,
-			},
-			{
-				Name:        "unit",
-				Description: "Unit of time",
-				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    true,
-				Choices: []*discordgo.ApplicationCommandOptionChoice{
-					{
-						Name:  "days",
-						Value: "days",
-					},
-					{
-						Name:  "hours",
-						Value: "hours",
-					},
-					{
-						Name:  "minutes",
-						Value: "minutes",
-					},
-					{
-						Name:  "seconds",
-						Value: "seconds",
-					},
-				},
-			},
-
-			{
-				Name:        "user",
-				Description: "User",
-				Type:        discordgo.ApplicationCommandOptionUser,
-				Required:    true,
-			},
-
-			{
-				Name:        "reminder",
-				Description: "Reminder Message",
-				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    true,
-			},
-		},
-	}
-
-	setDateCommand := &discordgo.ApplicationCommand{
-		Name:        "setdate",
-		Description: "Create a reminder for a specific date and time (UTC).",
-		Options: []*discordgo.ApplicationCommandOption{
-			{
-				Name:        "year",
-				Description: "Year",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				Required:    true,
-			},
-			{
-				Name:        "month",
-				Description: "Month",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				Required:    true,
-			},
-			{
-				Name:        "day",
-				Description: "Day",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				Required:    true,
-			},
-			{
-				Name:        "hour",
-				Description: "Hour (24h)",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				Required:    true,
-			},
-			{
-				Name:        "minute",
-				Description: "Minute",
-				Type:        discordgo.ApplicationCommandOptionInteger,
-				Required:    true,
-			},
-			{
-				Name:        "user",
-				Description: "User",
-				Type:        discordgo.ApplicationCommandOptionUser,
-				Required:    true,
-			},
-			{
-				Name:        "reminder",
-				Description: "Reminder Message",
-				Type:        discordgo.ApplicationCommandOptionString,
-				Required:    true,
-			},
-		},
+		return nil, fmt.Errorf("error opening connection to Discord: %w", err)
 	}
 
 	appID := os.Getenv("DISCORD_APP_ID")
 
-	_, err = discord.ApplicationCommandCreate(appID, "", setTimerCommand)
+	err = commandHandler.SyncCommands(discord, appID)
 	if err != nil {
-		log.Fatalf("Error creating 'settimer' command: %v", err)
-	}
-	_, err = discord.ApplicationCommandCreate(appID, "", setDateCommand)
-	if err != nil {
-		log.Fatalf("Error creating 'setdate' command: %v", err)
+		return nil, fmt.Errorf("error syncing commands: %w", err)
 	}
 
 	fmt.Println("Bot is running!")
