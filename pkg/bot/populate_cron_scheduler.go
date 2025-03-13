@@ -5,8 +5,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/Keenan-Nicholson/remindme/pkg/database"
 	"github.com/bwmarrin/discordgo"
+
+	"github.com/Keenan-Nicholson/remindme/pkg/database"
 )
 
 func PopulateCronScheduleFromDatabase(s *discordgo.Session) error {

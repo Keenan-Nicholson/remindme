@@ -4,9 +4,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+
 	"github.com/Keenan-Nicholson/remindme/pkg/database"
 	"github.com/Keenan-Nicholson/remindme/pkg/utils"
-	"github.com/bwmarrin/discordgo"
 )
 
 func TimerCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {

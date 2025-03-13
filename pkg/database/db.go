@@ -14,7 +14,7 @@ var db *sql.DB // Declare a global db connection
 // InitDB initializes the database and creates the table if it doesn't exist
 func InitDB() {
 	var err error
-	db, err = sql.Open("sqlite3", "file:/app/data/database.db?cache=shared&mode=rwc&_loc=UTC")
+	db, err = sql.Open("sqlite3", "file:data/database.db?cache=shared&mode=rwc&_loc=UTC")
 	if err != nil {
 		log.Fatal("Error opening database:", err)
 	}

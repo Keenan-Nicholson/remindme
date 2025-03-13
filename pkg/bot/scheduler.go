@@ -5,9 +5,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/Keenan-Nicholson/remindme/pkg/database"
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-co-op/gocron/v2"
+
+	"github.com/Keenan-Nicholson/remindme/pkg/database"
 )
 
 func CreateOneTimeCronJob(discord *discordgo.Session, duration time.Duration, userID string, reminder string, uid int, channelID string) {
