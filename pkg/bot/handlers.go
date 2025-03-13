@@ -87,6 +87,7 @@ type dateArgs struct {
 	Minute   int            `description:"Minute"`
 	User     discordgo.User `description:"User"`
 	Reminder string         `description:"Reminder message"`
+	Timezone string         `description:"Timezone the provided date / time are in. Must be a valid IANA timezone." default:"Etc/UTC"`
 }
 
 func DateCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, args dateArgs) {
@@ -102,8 +103,20 @@ func DateCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ar
 
 	log.Printf("year: %d, month: %d, day: %d, hour: %d, minute: %d, userID: %s, reminder: %s, channel: %s, guild: %s\n", year, month, day, hour, minute, userID, reminder, channelID, guildID)
 
+	location, err := time.LoadLocation(args.Timezone)
+	if err != nil {
+		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Invalid timezone provided. Please use a [valid IANA timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
+		return
+	}
+
 	// Handle the cron job
-	timeDuration := utils.ConvertDateToDuration(year, month, day, hour, minute)
+	timeDuration := utils.ConvertDateToDuration(year, month, day, hour, minute, location)
 
 	validatedDuration, inputErr := utils.ValidateDuration(timeDuration)
 	if inputErr != nil {
